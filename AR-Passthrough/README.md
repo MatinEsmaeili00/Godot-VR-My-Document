@@ -8,9 +8,7 @@ The goal is simple:
 
 > The player presses `grip_click`, and the game switches between normal VR mode and AR passthrough mode.
 
-There is **no server/client logic** in this version.  
-There is **no RPC**.  
-There is **no multiplayer broadcasting**.
+
 
 This version is only for testing passthrough locally on one headset.
 
@@ -39,12 +37,7 @@ Game toggles passthrough state
 Current headset switches between VR and AR passthrough
 ```
 
-Important idea:
 
-```text
-Passthrough is a local headset/XR setting.
-For single-player testing, we only need to change it on the current headset.
-```
 
 ---
 
@@ -56,23 +49,9 @@ The action name from the OpenXR Action Map is:
 grip_click
 ```
 
-Make sure the script checks exactly this name:
-
-```gdscript
-"grip_click":
-```
-
-Do not use:
-
-```text
-grip
-grip_button
-grip_pressed
-```
-
 ---
 
-# 🧱 Required Project Settings
+# 🧱 Project Settings
 
 ## Project Settings
 
@@ -88,17 +67,16 @@ Project Settings
 Recommended settings:
 
 ```text
-Enabled: On
-Environment Blend Mode: Alpha
-Reference Space: Stage
+Environment Blend Mode: Alpha or Addictive (not Opaque)
 ```
 
-Then go to:
+<img src="images/Project Settings2.jpg" alt="Description" width="1300">
+
+
+
+Then in the same section go to:
 
 ```text
-XR
-→ OpenXR
-→ Extensions
 → Meta
 ```
 
@@ -107,10 +85,11 @@ Enable:
 ```text
 Passthrough: On
 ```
+<img src="images/Project Settings1.png" alt="Description" width="1300">
 
 ---
 
-# 📦 Required Android Export Settings
+# 📦 Android Export Settings
 
 Go to:
 
@@ -119,17 +98,31 @@ Project
 → Export
 → Android Preset
 → Options
-→ Meta XR Features
+	→ XR Features
 ```
+Set:
+```text
+Enable Meta Plugin: On
+```
+<img src="images/Export Settings2.jpg" alt="Description" width="720">
+
+----
+
+After that go to : 
+
+```text
+In the Same seciton:
+→ Options
+	→ Meta XR Features
+```
+<img src="images/Export Settings1.png" alt="Description" width="720">
+
 
 Set:
 
 ```text
 Passthrough: Optional
 Boundary Mode: Enabled
-Quest 2 Support: On
-Quest 3 Support: On
-Quest Pro Support: On
 ```
 
 For debugging only, you can temporarily set:
@@ -140,30 +133,6 @@ Passthrough: Required
 
 Use `Required` only to test if the Android build is correctly requesting passthrough support.
 
----
-
-# ⚠️ Important Build Note
-
-Restarting the Godot editor is not enough by itself.
-
-After changing OpenXR / Meta XR settings, do this:
-
-```text
-1. Save the project.
-2. Stop the current running game.
-3. Re-export / run the Android build again.
-4. Install the new build on the Quest.
-5. Fully close the old app on the Quest.
-6. Test inside the headset.
-```
-
-If the old build is still installed/running, the project may still report only:
-
-```text
-Supported XR blend modes: OPAQUE
-```
-
-That means the running app still only has normal VR mode available.
 
 ---
 
@@ -374,64 +343,7 @@ Passthrough state is now: false
 
 ---
 
-# 🧯 Troubleshooting
 
-## Problem: Only `OPAQUE` is supported
-
-Log:
-
-```text
-Supported XR blend modes: OPAQUE
-ERROR: No AR passthrough blend mode is supported. Only VR/OPAQUE is available right now.
-```
-
-Meaning:
-
-```text
-The current running OpenXR runtime does not expose AR passthrough blend mode.
-The game is still running as normal VR.
-```
-
-Possible causes:
-
-- You are testing from the Windows editor instead of the Quest Android build.
-- The Quest is still running an old build.
-- The Android export was not rebuilt after changing settings.
-- Meta passthrough is not enabled in Project Settings.
-- Meta passthrough is not enabled in the Android Export preset.
-- The OpenXR Vendors plugin is missing or not the correct version.
-- The app is running through a desktop OpenXR runtime that only supports `OPAQUE`.
-
----
-
-## Problem: Restarting Godot did not fix it
-
-Restarting the editor helps sometimes, but it does not automatically update the app installed on Quest.
-
-You still need to:
-
-```text
-Re-export
-Reinstall
-Run the new build on the headset
-```
-
----
-
-## Problem: The button works, but passthrough does not
-
-If the log shows this:
-
-```text
-Right controller button pressed: 'grip_click'
-Right grip click -> Toggle AR passthrough
-```
-
-then the input is working.
-
-The remaining problem is the XR runtime/export/device setup.
-
----
 
 # 🧪 Debug Checklist
 
@@ -441,31 +353,3 @@ Before testing passthrough, check these:
 - [ ] XR → OpenXR → Environment Blend Mode is set to `Alpha`.
 - [ ] XR → OpenXR → Extensions → Meta → Passthrough is ON.
 - [ ] Export → Android → Meta XR Features → Passthrough is `Optional` or `Required`.
-- [ ] The project was saved after changing settings.
-- [ ] The Android build was re-exported.
-- [ ] The new build was installed on Quest.
-- [ ] The old app was fully closed on Quest.
-- [ ] Testing is happening inside the Quest headset, not only the PC editor.
-- [ ] Debug output shows `ALPHA_BLEND` in supported blend modes.
-
----
-
-# ⚠️ Current Limitations
-
-- This setup is single-player only.
-- It does not use server/client logic.
-- It does not use RPC.
-- It only changes passthrough on the current headset.
-- Passthrough depends on the runtime reporting `ALPHA_BLEND` or `ADDITIVE`.
-- If the runtime only reports `OPAQUE`, the code cannot force passthrough.
-- This feature must be tested on the actual Quest Android build.
-
----
-
-# 🚧 Next Steps
-
-- Test with `Passthrough: Required` in the Android export preset.
-- Rebuild and reinstall the app on the Quest.
-- Confirm that debug output shows `ALPHA_BLEND`.
-- After it works, change `Passthrough` back to `Optional` if needed.
-- Add a small UI indicator showing whether the game is currently in VR mode or AR passthrough mode.
